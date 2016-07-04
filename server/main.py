@@ -19,6 +19,7 @@ import tornado.web
 
 class WSHandler(tornado.websocket.WebSocketHandler):
     clients = []
+    client_info = {}
 
     def check_origin(self, origin):
         return True
@@ -27,17 +28,22 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         print('new connection')
         self.write_message("Hello World")
         WSHandler.clients.append(self)
+        WSHandler.client_info[hash(self)] = {}
 
     def on_message(self, message):
-        print('message received {}'.format(message))
-        self.write_message('ECHO: ' + message)
+        if 'name: ' in message:
+            name = message.split('name: ')[1]
+            WSHandler.client_info[hash(self)]['name'] = name
+        else:
+            WSHandler.client_info[hash(self)].get('name', 'Somebody')
+            WSHandler.broadcast('{}: {}'.format(client_name, message))
 
     def on_close(self):
         print('connection closed')
         WSHandler.clients.remove(self)
 
     @classmethod
-    def write_to_clients(cls):
+    def broadcast(cls):
         print("Writing to clients")
         for client in cls.clients:
             client.write_message("Hi there!")
@@ -50,6 +56,5 @@ application = tornado.web.Application([
 if __name__ == "__main__":
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.listen(8888)
-    tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=15),
-WSHandler.write_to_clients)
+    tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=15), WSHandler.broadcast)
     tornado.ioloop.IOLoop.instance().start()

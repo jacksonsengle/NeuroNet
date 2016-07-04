@@ -18,7 +18,7 @@ var textareaModule = function() {
 	var module = {}
 	var el = document.getElementById('area');
 	module.write = function(val) {
-		el.innerHTML = el.innerHTML + val + '\n';
+		el.innerHTML = val + '\n' + el.innerHTML;
 	}
 	module.error = function(val) {
 		module.write("ERROR: " + val);
