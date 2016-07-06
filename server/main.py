@@ -14,40 +14,41 @@ import tornado.httpserver
 import tornado.websocket
 import tornado.ioloop
 import tornado.web
+import game
 
-
+this_game = game.Game()
 
 class WSHandler(tornado.websocket.WebSocketHandler):
-    clients = []
-    client_info = {}
+    def set_client(self, cl):
+        this_game.add_client(cl)
+
+    def get_client(self):
+        this_game.clients[hash(self)]
+
+    def remove_client(self):
+        this_game.remove_client(self.get_client())
 
     def check_origin(self, origin):
         return True
 
     def open(self):
-        print('new connection')
-        self.write_message("Hello World")
-        WSHandler.clients.append(self)
-        WSHandler.client_info[hash(self)] = {}
+        new_client = this_game.Client(socket=self)
+        WSHandler.broadcast('{} has joined!'.format(new_client.user.name))
+        self.set_client(new_client)
 
     def on_message(self, message):
-        if 'name: ' in message:
-            name = message.split('name: ')[1]
-            WSHandler.client_info[hash(self)]['name'] = name
-        else:
-            WSHandler.client_info[hash(self)].get('name', 'Somebody')
-            WSHandler.broadcast('{}: {}'.format(client_name, message))
+        client = self.get_client()
+        this_game.on_message(client, message)
 
     def on_close(self):
-        print('connection closed')
-        WSHandler.clients.remove(self)
+        self.remove_client()
 
     @classmethod
-    def broadcast(cls):
-        print("Writing to clients")
-        for client in cls.clients:
-            client.write_message("Hi there!")
+    def broadcast(cls, msg):
+        for client in cls.this_game.clients:
+            client.socket.write_message(msg)
 
+this_game.ws_handler = WSHandler
 
 application = tornado.web.Application([
   (r'/websocket', WSHandler),
@@ -56,5 +57,4 @@ application = tornado.web.Application([
 if __name__ == "__main__":
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.listen(8888)
-    tornado.ioloop.IOLoop.instance().add_timeout(datetime.timedelta(seconds=15), WSHandler.broadcast)
     tornado.ioloop.IOLoop.instance().start()
