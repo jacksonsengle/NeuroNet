@@ -75,7 +75,7 @@ class Game(object):
 
     def perform_command(self, client, command):
         if command.name == SAY:
-            self.broadcast('{} says "{}"'.format(user.name, command.msg)
+            self.broadcast('{} says "{}"'.format(user.name, command.msg))
         elif command.name == EMOTE:
             self.broadcast('{} {}'.format(user.name, command.msg))
         elif command.name == NAME:

@@ -32,7 +32,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         return True
 
     def open(self):
-        new_client = this_game.Client(socket=self)
+        new_client = game.Client(socket=self)
         WSHandler.broadcast('{} has joined!'.format(new_client.user.name))
         self.set_client(new_client)
 
@@ -41,11 +41,12 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         this_game.on_message(client, message)
 
     def on_close(self):
-        self.remove_client()
+        #self.remove_client()
+        pass
 
     @classmethod
     def broadcast(cls, msg):
-        for client in cls.this_game.clients:
+        for client in this_game.clients:
             client.socket.write_message(msg)
 
 this_game.ws_handler = WSHandler
