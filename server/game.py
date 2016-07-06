@@ -11,7 +11,8 @@
 """
 class User(object):
     def __init__(self):
-        pass
+        self.name = 'Somebody'
+        self.location = (0, 0, 0)
 
 class Command(object):
     def __init__(self):
