@@ -35,22 +35,34 @@ class Command(object):
                           MOVE_SOUTH, MOVE_WEST, QUIT, LOOK])
     def __init__(self, raw_msg):
         self.name = None
-        self.raw_msg
+        self.raw_msg = raw_msg
         self.parse_string(self.raw_msg)
 
     def parse_string(self, raw_string):
         self.name = self.parse_name(raw_string)
-        self.msg = self.parse_msg(raw_string)
+        self.msg = self.parse_msg(self.name, raw_string)
 
     def parse_name(self, raw_string):
-        first, rest = raw_string.split(' ', 1)
-        if f.lower() in Command.VALID_COMMANDS:
-            return f.lower()
-        raise Exception("Invalid command {}.".format(self.name))
+        split = raw_string.split(' ', 1)
+        if split[0].lower() in Command.VALID_COMMANDS:
+            return split[0].lower()
+        else:
+            return Command.SAY
 
-    def parse_msg(self, raw_string):
-        first, rest = raw_string.split(' ', 1)
-        return rest
+    def parse_msg(self, name, raw_string):
+        if name == Command.SAY:
+            split = raw_string.split(' ', 1)
+            if split[0] == Command.SAY:
+                return split[1]
+            else:
+                return raw_string
+        else:
+            split = raw_string.split(' ', 1)
+            if len(split) > 1:
+                first, rest = split
+                return rest
+            else:
+                return split[0]
 
 class Game(object):
     def __init__(self):
@@ -58,14 +70,17 @@ class Game(object):
         self.ws_handler = None
 
     def add_client(self, c):
-        self.clients[hash(c)] = c
-        self.broadcast('{} has joined!'.format(new_client.user.name))
+        print("Adding client {} with hash {} to {}".format(c, hash(c.socket), self.clients))
+        self.clients[hash(c.socket)] = c
+        print(self.clients)
+        self.broadcast('{} has joined!'.format(c.user.name))
 
     def remove_client(self, c):
-        del self.clients[hash(c)]
+        if hash(c) in self.clients:
+            del self.clients[hash(c.socket)]
 
     def on_message(self, c, msg):
-        self.perform_command(c, Command(msg=msg))
+        self.perform_command(c, Command(raw_msg=msg))
 
     def broadcast(self, msg):
         self.ws_handler.broadcast(msg)
@@ -74,27 +89,26 @@ class Game(object):
         return 'You see nothing.'
 
     def perform_command(self, client, command):
-        if command.name == SAY:
+        user = client.user
+        if command.name == Command.SAY:
             self.broadcast('{} says "{}"'.format(user.name, command.msg))
-        elif command.name == EMOTE:
-            self.broadcast('{} {}'.format(user.name, command.msg))
-        elif command.name == NAME:
+        elif command.name == Command.EMOTE:
+            self.broadcast('*{} {}*'.format(user.name, command.msg))
+        elif command.name == Command.NAME:
             old_name = user.name
             user.name = command.msg
             self.broadcast('{} changed their name to {}.'.format(old_name, user.name))
-        elif command.name == INVENTORY:
+        elif command.name == Command.INVENTORY:
             client.socket.write_message('Your inventory is empty.')
-        elif command.name == MOVE_NORTH:
+        elif command.name == Command.MOVE_NORTH:
             pass
-        elif command.name == MOVE_EAST:
+        elif command.name == Command.MOVE_EAST:
             pass
-        elif command.name == MOVE_SOUTH:
+        elif command.name == Command.MOVE_SOUTH:
             pass
-        elif command.name == MOVE_WEST:
+        elif command.name == Command.MOVE_WEST:
             pass
-        elif command.name == QUIT:
-            pass
-        elif command.name == Command.SAY:
+        elif command.name == Command.QUIT:
             pass
         elif command.name == Command.EMOTE:
             pass

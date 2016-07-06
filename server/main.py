@@ -23,7 +23,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         this_game.add_client(cl)
 
     def get_client(self):
-        this_game.clients[hash(self)]
+        return this_game.clients.get(hash(self), None)
 
     def remove_client(self):
         this_game.remove_client(self.get_client())
@@ -38,15 +38,18 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 
     def on_message(self, message):
         client = self.get_client()
-        this_game.on_message(client, message)
+        try:
+            this_game.on_message(client, message)
+        except Exception as e:
+            self.broadcast("{} casued an error! (Error: {})".format(client.user.name, e))
 
     def on_close(self):
-        #self.remove_client()
-        pass
+        self.remove_client()
 
     @classmethod
     def broadcast(cls, msg):
-        for client in this_game.clients:
+        for client_id in this_game.clients:
+            client = this_game.clients[client_id]
             client.socket.write_message(msg)
 
 this_game.ws_handler = WSHandler
