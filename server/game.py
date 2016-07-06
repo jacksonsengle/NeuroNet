@@ -10,11 +10,6 @@
     :license: All Rights Reserved.
 """
 
-class User(object):
-    def __init__(self):
-        self.name = 'Somebody'
-        self.location = (0, 0, 0)
-
 class Client(object):
     def __init__(self, socket):
         self.socket = socket
@@ -33,6 +28,8 @@ class Command(object):
     QUIT = 'quit'
     VALID_COMMANDS = set([SAY, EMOTE, NAME, INVENTORY, MOVE_NORTH, MOVE_EAST,
                           MOVE_SOUTH, MOVE_WEST, QUIT, LOOK])
+    DIRECTIONS = set([MOVE_NORTH, MOVE_EAST, MOVE_SOUTH, MOVE_WEST])
+
     def __init__(self, raw_msg):
         self.name = None
         self.raw_msg = raw_msg
@@ -64,6 +61,18 @@ class Command(object):
             else:
                 return split[0]
 
+class User(object):
+    def __init__(self):
+        self.name = 'Somebody'
+        self.location = (0, 0, 0)
+    def move(self, direction):
+        """
+        Jackson, please implement this method, it takes in a direction in
+        {Command.MOVE_NORTH, Command.MOVE_EAST, Command.MOVE_WEST, Command.MOVE_WEST}
+        and updates the user's location attribute
+        """
+        pass
+
 class Game(object):
     def __init__(self):
         self.clients = {}
@@ -86,6 +95,9 @@ class Game(object):
         self.ws_handler.broadcast(msg)
 
     def look_string(self):
+        """
+        Jackson, please implement this method too.
+        """
         return 'You see nothing.'
 
     def perform_command(self, client, command):
@@ -100,17 +112,9 @@ class Game(object):
             self.broadcast('{} changed their name to {}.'.format(old_name, user.name))
         elif command.name == Command.INVENTORY:
             client.socket.write_message('Your inventory is empty.')
-        elif command.name == Command.MOVE_NORTH:
-            pass
-        elif command.name == Command.MOVE_EAST:
-            pass
-        elif command.name == Command.MOVE_SOUTH:
-            pass
-        elif command.name == Command.MOVE_WEST:
-            pass
+        elif command.name in set(Command.DIRECTIONS):
+            client.user.move(command.name)
         elif command.name == Command.QUIT:
-            pass
-        elif command.name == Command.EMOTE:
             pass
         elif command.name == Command.LOOK:
             self.broadcast('{} looks around.'.format(user.name))
