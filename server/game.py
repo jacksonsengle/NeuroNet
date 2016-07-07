@@ -65,6 +65,9 @@ class Inventory(object):
         if remaining_qty == 0:
             del self.contents[item]
 
+    def is_empty(self):
+        return len(self.contents) == 0
+
     def __str__(self):
         """
         >>> print(str(inventory_obj))
