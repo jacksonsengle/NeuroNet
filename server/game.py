@@ -209,6 +209,6 @@ class Game(object):
             pass
         elif command.name == Command.LOOK:
             self.broadcast('{} looks around.'.format(user.name))
-            client.socket.write_message(self.look_string())
+            client.socket.write_message(self.look_string(client))
         else:
             pass
