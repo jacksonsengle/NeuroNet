@@ -9,7 +9,6 @@
     :copyright: (c) 2016, Lambda Labs, Inc.
     :license: All Rights Reserved.
 """
-import datetime
 import tornado.httpserver
 import tornado.websocket
 import tornado.ioloop
@@ -18,7 +17,9 @@ import game
 
 this_game = game.Game()
 
+
 class WSHandler(tornado.websocket.WebSocketHandler):
+
     def set_client(self, cl):
         this_game.add_client(cl)
 
@@ -41,7 +42,8 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         try:
             this_game.on_message(client, message)
         except Exception as e:
-            self.broadcast("{} casued an error! (Error: {})".format(client.user.name, e))
+            self.broadcast("{} casued an error! (Error: {})"
+                           .format(client.user.name, e))
 
     def on_close(self):
         self.remove_client()
@@ -50,12 +52,15 @@ class WSHandler(tornado.websocket.WebSocketHandler):
     def broadcast(cls, msg):
         for client_id in this_game.clients:
             client = this_game.clients[client_id]
-            client.socket.write_message(msg)
+            try:
+                client.socket.write_message(msg)
+            except tornado.websocket.WebSocketClosedError:
+                client.socket.remove_client(client)
 
 this_game.ws_handler = WSHandler
 
 application = tornado.web.Application([
-  (r'/websocket', WSHandler),
+    (r'/websocket', WSHandler),
 ])
 
 if __name__ == "__main__":
