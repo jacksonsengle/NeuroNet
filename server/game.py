@@ -195,7 +195,8 @@ class Game(object):
         """
         Jackson, please implement this method too.
         """
-        return '\n'.join(["{} is at location: {}".format(client.user.name, client.user.location) for client in self.clients])
+        return '\n'.join(["{} is at location: {}".format(client.user.name, client.user.location) for client in
+self.clients.values()])
 
 
     def perform_command(self, client, command):
