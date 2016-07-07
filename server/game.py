@@ -9,6 +9,8 @@
     :copyright: (c) 2016, Lambda Labs, Inc.
     :license: All Rights Reserved.
 """
+import math
+import random
 
 
 class Item(object):
@@ -41,7 +43,7 @@ class Inventory(object):
     def __init__(self):
         self.contents = {}
 
-    def add(self, item, qty):
+    def add(self, item, qty=1):
         self.contents[item] = ItemEntry(item, qty)
 
     def contains_enough(self, item):
@@ -67,15 +69,29 @@ class Inventory(object):
         """
         >>> print(str(inventory_obj))
         """
-        return ('Your inventory contains:\n' +
-                '\n'.join(str(item_entry) for item_entry in
-                          self.contents.values()))
+        title = 'Your inventory contains:\n'
+        if self.is_empty():
+            contents = 'Nothing'
+        else:
+            contents = '\n'.join(str(item_entry) for item_entry in
+                                 self.contents.values())
+        return title + contents
 
 
 class Client(object):
     def __init__(self, socket):
         self.socket = socket
         self.user = User()
+        self.user.inventory.add(Item(), math.ceil(random.random() * 10))
+        self.user.inventory.add(Item(name='Tattered cloak'), 1)
+        if random.random() > 0.9:
+            self.user.inventory.add(Item(name='Jeweled dagger'), 1)
+        if random.random() > 0.99:
+            self.user.inventory.add(Item(name='Wizard robe'), 1)
+        if random.random() > 0.5:
+            self.user.inventory.add(Item(name='White stone'), 1)
+        else:
+            self.user.inventory.add(Item(name='Black stone'), 1)
 
 
 class Command(object):
@@ -129,6 +145,7 @@ class User(object):
     def __init__(self):
         self.name = 'Somebody'
         self.location = (0, 0, 0)
+        self.inventory = Inventory()
 
     def move(self, direction):
 
@@ -138,35 +155,25 @@ class User(object):
         Command.MOVE_WEST} and updates the user's location attribute
         """
         if direction == Command.MOVE_NORTH:
-            new_location = (self.location[0], self.location[1]+1, self.location[2])
+            new_location = (self.location[0], self.location[1] + 1,
+                            self.location[2])
             self.location = new_location
-   
-            print ("Moved North")
-            print ('New location: {}'.format(self.location))
-            
         elif direction == Command.MOVE_EAST:
-            new_location = (self.location[0]+1, self.location[1], self.location[2])
+            new_location = (self.location[0]+1, self.location[1],
+                            self.location[2])
             self.location = new_location
-            print('Moved East')
-            print ('New location: {}'.format(self.location))
-            
-
         elif direction == Command.MOVE_SOUTH:
-       	    new_location = (self.location[0], self.location[1]-1, self.location[2])
+            new_location = (self.location[0], self.location[1] - 1,
+                            self.location[2])
             self.location = new_location
-            print('Moved South')
-            print ('New location: {}'.format(self.location))
-            
         elif direction == Command.MOVE_WEST:
-            new_location = (self.location[0]-1, self.location[1], self.location[2])
+            new_location = (self.location[0]-1, self.location[1],
+                            self.location[2])
             self.location = new_location
             print('Moved West')
             print ('New location: {}'.format(self.location))
-            
         else:
             pass
-
-        pass
 
 
 class Game(object):
@@ -195,9 +202,15 @@ class Game(object):
         """
         Jackson, please implement this method too.
         """
+<<<<<<< HEAD
         return '\n'.join(["{} is at location: {}".format(client.user.name, client.user.location) for client in
 self.clients.values()])
 
+=======
+        return '\n'.join(["{} is at location: {}"
+                          .format(aclient.user.name, aclient.user.location)
+                          for aclient in self.clients])
+>>>>>>> 10e00922f3bf36c695d19ebd11894bc67edf2117
 
     def perform_command(self, client, command):
         user = client.user
@@ -211,7 +224,7 @@ self.clients.values()])
             self.broadcast('{} changed their name to {}.'
                            .format(old_name, user.name))
         elif command.name == Command.INVENTORY:
-            client.socket.write_message('Your inventory is empty.')
+            client.socket.write_message(str(user.inventory))
         elif command.name in set(Command.DIRECTIONS):
             client.user.move(command.name)
         elif command.name == Command.QUIT:
