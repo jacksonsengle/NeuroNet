@@ -129,6 +129,7 @@ class User(object):
     def __init__(self):
         self.name = 'Somebody'
         self.location = (0, 0, 0)
+        self.inventory = Inventory()
 
     def move(self, direction):
 
@@ -138,35 +139,25 @@ class User(object):
         Command.MOVE_WEST} and updates the user's location attribute
         """
         if direction == Command.MOVE_NORTH:
-            new_location = (self.location[0], self.location[1]+1, self.location[2])
+            new_location = (self.location[0], self.location[1] + 1,
+                            self.location[2])
             self.location = new_location
-   
-            print ("Moved North")
-            print ('New location: {}'.format(self.location))
-            
         elif direction == Command.MOVE_EAST:
-            new_location = (self.location[0]+1, self.location[1], self.location[2])
+            new_location = (self.location[0]+1, self.location[1],
+                            self.location[2])
             self.location = new_location
-            print('Moved East')
-            print ('New location: {}'.format(self.location))
-            
-
         elif direction == Command.MOVE_SOUTH:
-       	    new_location = (self.location[0], self.location[1]-1, self.location[2])
+            new_location = (self.location[0], self.location[1] - 1,
+                            self.location[2])
             self.location = new_location
-            print('Moved South')
-            print ('New location: {}'.format(self.location))
-            
         elif direction == Command.MOVE_WEST:
-            new_location = (self.location[0]-1, self.location[1], self.location[2])
+            new_location = (self.location[0]-1, self.location[1],
+                            self.location[2])
             self.location = new_location
             print('Moved West')
             print ('New location: {}'.format(self.location))
-            
         else:
             pass
-
-        pass
 
 
 class Game(object):
@@ -195,8 +186,9 @@ class Game(object):
         """
         Jackson, please implement this method too.
         """
-        return '\n'.join(["{} is at location: {}".format(client.user.name, client.user.location) for client in self.clients])
-
+        return '\n'.join(["{} is at location: {}"
+                          .format(aclient.user.name, aclient.user.location)
+                          for aclient in self.clients])
 
     def perform_command(self, client, command):
         user = client.user
