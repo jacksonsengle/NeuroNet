@@ -9,6 +9,8 @@
     :copyright: (c) 2016, Lambda Labs, Inc.
     :license: All Rights Reserved.
 """
+import math
+import random
 
 
 class Item(object):
@@ -41,7 +43,7 @@ class Inventory(object):
     def __init__(self):
         self.contents = {}
 
-    def add(self, item, qty):
+    def add(self, item, qty=1):
         self.contents[item] = ItemEntry(item, qty)
 
     def contains_enough(self, item):
@@ -67,15 +69,29 @@ class Inventory(object):
         """
         >>> print(str(inventory_obj))
         """
-        return ('Your inventory contains:\n' +
-                '\n'.join(str(item_entry) for item_entry in
-                          self.contents.values()))
+        title = 'Your inventory contains:\n'
+        if self.is_empty():
+            contents = 'Nothing'
+        else:
+            contents = '\n'.join(str(item_entry) for item_entry in
+                                 self.contents.values())
+        return title + contents
 
 
 class Client(object):
     def __init__(self, socket):
         self.socket = socket
         self.user = User()
+        self.user.inventory.add(Item(), math.ceil(random.random() * 10))
+        self.user.inventory.add(Item(name='Tattered cloak'), 1)
+        if random.random() > 0.9:
+            self.user.inventory.add(Item(name='Jeweled dagger'), 1)
+        if random.random() > 0.99:
+            self.user.inventory.add(Item(name='Wizard robe'), 1)
+        if random.random() > 0.5:
+            self.user.inventory.add(Item(name='White stone'), 1)
+        else:
+            self.user.inventory.add(Item(name='Black stone'), 1)
 
 
 class Command(object):
@@ -202,7 +218,7 @@ class Game(object):
             self.broadcast('{} changed their name to {}.'
                            .format(old_name, user.name))
         elif command.name == Command.INVENTORY:
-            client.socket.write_message('Your inventory is empty.')
+            client.socket.write_message(str(user.inventory))
         elif command.name in set(Command.DIRECTIONS):
             client.user.move(command.name)
         elif command.name == Command.QUIT:
