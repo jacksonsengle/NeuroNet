@@ -194,13 +194,13 @@ class Game(object):
     def add_client(self, c):
         print("Adding client {} with hash {} to {}".format(c, hash(c.socket),
                                                            self.clients))
-        self.clients[hash(c.socket)] = c
+        self.clients[c.socket] = c
         print(self.clients)
         self.broadcast('{} has joined!'.format(c.user.name))
 
     def remove_client(self, c):
-        if hash(c) in self.clients:
-            del self.clients[hash(c.socket)]
+        if c in self.clients:
+            del self.clients[c.socket]
 
     def on_message(self, c, msg):
         self.perform_command(c, Command(raw_msg=msg))

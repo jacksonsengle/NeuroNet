@@ -24,7 +24,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         this_game.add_client(cl)
 
     def get_client(self):
-        return this_game.clients.get(hash(self), None)
+        return this_game.clients.get(self, None)
 
     def remove_client(self):
         this_game.remove_client(self.get_client())
