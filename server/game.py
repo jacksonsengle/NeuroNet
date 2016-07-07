@@ -66,11 +66,41 @@ class User(object):
         self.name = 'Somebody'
         self.location = (0, 0, 0)
     def move(self, direction):
+
         """
         Jackson, please implement this method, it takes in a direction in
         {Command.MOVE_NORTH, Command.MOVE_EAST, Command.MOVE_WEST, Command.MOVE_WEST}
         and updates the user's location attribute
         """
+        if direction == Command.MOVE_NORTH:
+            new_location = (self.location[0], self.location[1]+1, self.location[2])
+            self.location = new_location
+   
+            print ("Moved North")
+            print ('New location: {}'.format(self.location))
+            
+        elif direction == Command.MOVE_EAST:
+            new_location = (self.location[0]+1, self.location[1], self.location[2])
+            self.location = new_location
+            print('Moved East')
+            print ('New location: {}'.format(self.location))
+            
+
+        elif direction == Command.MOVE_SOUTH:
+       	    new_location = (self.location[0], self.location[1]-1, self.location[2])
+            self.location = new_location
+            print('Moved South')
+            print ('New location: {}'.format(self.location))
+            
+        elif direction == Command.MOVE_WEST:
+            new_location = (self.location[0]-1, self.location[1], self.location[2])
+            self.location = new_location
+            print('Moved West')
+            print ('New location: {}'.format(self.location))
+            
+        else:
+            pass
+
         pass
 
 class Game(object):
@@ -94,11 +124,12 @@ class Game(object):
     def broadcast(self, msg):
         self.ws_handler.broadcast(msg)
 
-    def look_string(self):
+    def look_string(self, client):
         """
         Jackson, please implement this method too.
         """
-        return 'You see nothing.'
+        return '\n'.join(["{} is at location: {}".format(client.user.name, client.user.location) for client in self.clients])
+
 
     def perform_command(self, client, command):
         user = client.user
