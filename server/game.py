@@ -10,10 +10,73 @@
     :license: All Rights Reserved.
 """
 
+
+class Item(object):
+    """
+    Items are stored inside of an inventory.
+    """
+    def __init__(self, name='Dongle'):
+        self.name = name
+
+    def __str__(self):
+        return self.name
+
+
+class ItemEntry(object):
+    def __init__(self, item, qty):
+        self.item = item
+        self.qty = qty
+
+    def __hash__(self):
+        return hash(self.item)
+
+    def __str__(self):
+        return '{} x{}'.format(self.item, self.qty)
+
+
+class Inventory(object):
+    """
+    Inventories are a set of item entries.
+    """
+    def __init__(self):
+        self.contents = {}
+
+    def add(self, item, qty):
+        self.contents[item] = ItemEntry(item, qty)
+
+    def contains_enough(self, item):
+        if item in self.contents:
+            return self.contents[item].qty
+        else:
+            return False
+
+    def quantity_of(self, item):
+        if self.contains_enough(item, 1):
+            return self.contents[item].qty
+        else:
+            return 0
+
+    def remove(self, item, qty):
+        if self.contains_enough(item, qty):
+            remaining_qty = self.quantity_of(item) - qty
+            self.contents[item] = ItemEntry(item, remaining_qty)
+        if remaining_qty == 0:
+            del self.contents[item]
+
+    def __str__(self):
+        """
+        >>> print(str(inventory_obj))
+        """
+        return ('Your inventory contains:\n' +
+                '\n'.join(str(item_entry) for item_entry in
+                          self.contents.values()))
+
+
 class Client(object):
     def __init__(self, socket):
         self.socket = socket
         self.user = User()
+
 
 class Command(object):
     SAY = 'say'
@@ -61,16 +124,18 @@ class Command(object):
             else:
                 return split[0]
 
+
 class User(object):
     def __init__(self):
         self.name = 'Somebody'
         self.location = (0, 0, 0)
+
     def move(self, direction):
 
         """
         Jackson, please implement this method, it takes in a direction in
-        {Command.MOVE_NORTH, Command.MOVE_EAST, Command.MOVE_WEST, Command.MOVE_WEST}
-        and updates the user's location attribute
+        {Command.MOVE_NORTH, Command.MOVE_EAST, Command.MOVE_WEST,
+        Command.MOVE_WEST} and updates the user's location attribute
         """
         if direction == Command.MOVE_NORTH:
             new_location = (self.location[0], self.location[1]+1, self.location[2])
@@ -103,13 +168,15 @@ class User(object):
 
         pass
 
+
 class Game(object):
     def __init__(self):
         self.clients = {}
         self.ws_handler = None
 
     def add_client(self, c):
-        print("Adding client {} with hash {} to {}".format(c, hash(c.socket), self.clients))
+        print("Adding client {} with hash {} to {}".format(c, hash(c.socket),
+                                                           self.clients))
         self.clients[hash(c.socket)] = c
         print(self.clients)
         self.broadcast('{} has joined!'.format(c.user.name))
@@ -140,7 +207,8 @@ class Game(object):
         elif command.name == Command.NAME:
             old_name = user.name
             user.name = command.msg
-            self.broadcast('{} changed their name to {}.'.format(old_name, user.name))
+            self.broadcast('{} changed their name to {}.'
+                           .format(old_name, user.name))
         elif command.name == Command.INVENTORY:
             client.socket.write_message('Your inventory is empty.')
         elif command.name in set(Command.DIRECTIONS):
