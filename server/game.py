@@ -105,8 +105,9 @@ class Command(object):
     MOVE_SOUTH = 'south'
     MOVE_WEST = 'west'
     QUIT = 'quit'
+    HELP = 'help'
     VALID_COMMANDS = set([SAY, EMOTE, NAME, INVENTORY, MOVE_NORTH, MOVE_EAST,
-                          MOVE_SOUTH, MOVE_WEST, QUIT, LOOK])
+                          MOVE_SOUTH, MOVE_WEST, QUIT, LOOK, HELP])
     DIRECTIONS = set([MOVE_NORTH, MOVE_EAST, MOVE_SOUTH, MOVE_WEST])
 
     def __init__(self, raw_msg):
@@ -139,6 +140,12 @@ class Command(object):
                 return rest
             else:
                 return split[0]
+
+    @classmethod
+    def help_string(cls):
+        title = 'Valid commands:\n'
+        body = ', '.join(list(Command.VALID_COMMANDS))
+        return title + body
 
 
 class User(object):
@@ -226,5 +233,7 @@ class Game(object):
         elif command.name == Command.LOOK:
             self.broadcast('{} looks around.'.format(user.name))
             client.socket.write_message(self.look_string(client))
+        elif command.name == Command.HELP:
+            client.socket.write_message(Command.help_string())
         else:
             pass
