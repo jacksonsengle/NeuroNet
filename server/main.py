@@ -55,7 +55,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
             try:
                 client.socket.write_message(msg)
             except tornado.websocket.WebSocketClosedError:
-                client.socket.remove_client(client)
+                client.socket.remove_client()
 
 this_game.ws_handler = WSHandler
 
